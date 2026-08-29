@@ -70,8 +70,8 @@ function renderBooks(books) {
         bookCard.style.setProperty('--spine-color', bgColor);
         bookCard.style.setProperty('--spine-width', `${width}px`);
 
+        // Sadece OpenLibrary denenir. Bulunamazsa onError tetiklenir.
         const primaryCover = isbnToUse ? `https://covers.openlibrary.org/b/isbn/${isbnToUse}-M.jpg` : '';
-        const fallbackCover = book.google_cover_url || '';
 
         bookCard.innerHTML = `
             <div class="cover-wrapper" style="background-color: ${bgColor};">
@@ -80,10 +80,11 @@ function renderBooks(books) {
                      class="book-cover" 
                      loading="lazy"
                      onload="checkImage(this)"
-                     onerror="showFallback(this, '${fallbackCover}')">
+                     onerror="showFallback(this)">
                 
-                <div class="fallback-cover" style="display: none; align-items: center; justify-content: center; height: 100%; text-align: center; color: white; padding: 10px; font-weight: bold; font-size: 14px;">
-                    ${book.title}
+                <div class="fallback-cover" style="display: none;">
+                    <div class="fb-title">${book.title}</div>
+                    <div class="fb-author">${book.author}</div>
                 </div>
             </div>
             <div class="book-info">
@@ -103,11 +104,9 @@ function checkImage(img) {
     }
 }
 
-function showFallback(img, fallbackUrl) {
-    if (fallbackUrl && img.src !== fallbackUrl) {
-        img.src = fallbackUrl;
-    } else {
-        img.style.display = 'none';
+function showFallback(img) {
+    img.style.display = 'none';
+    if(img.nextElementSibling) {
         img.nextElementSibling.style.display = 'flex';
     }
 }
@@ -181,8 +180,8 @@ function updateLibrary() {
 
 // --- GITHUB API İLE YENİ KİTAP EKLEME SİSTEMİ ---
 
-const GITHUB_USER = "SENIN_KULLANICI_ADIN"; // Örnek: efeyurteri
-const GITHUB_REPO = "REPO_ADIN"; // Örnek: kutuphane
+const GITHUB_USER = "efeyurteri"; // Örnek: efeyurteri
+const GITHUB_REPO = "kutuphane"; // Örnek: kutuphane
 const JSON_PATH = "books.json";
 
 const tokenInput = document.getElementById('github-token');
@@ -231,8 +230,7 @@ addBtn.addEventListener('click', async () => {
             number_of_pages: info.pageCount || 0,
             year_published: info.publishedDate ? parseInt(info.publishedDate.substring(0,4)) : 0,
             original_publication_year: 0,
-            genre: info.categories ? info.categories[0] : "Kurgu / Diğer",
-            google_cover_url: info.imageLinks && info.imageLinks.thumbnail ? info.imageLinks.thumbnail.replace('http:', 'https:') : ""
+            genre: info.categories ? info.categories[0] : "Kurgu / Diğer"
         };
 
         statusText.textContent = "GitHub'a kaydediliyor...";
