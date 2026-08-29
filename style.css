@@ -207,3 +207,42 @@ main {
     font-weight: bold;
     margin: 0 0 5px 0;
 }
+
+/* Kapak yüklenme ve hata yedekleri için eklentiler */
+.cover-wrapper {
+    width: 100%;
+    height: 240px;
+    position: relative;
+    overflow: hidden;
+}
+
+.book-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: fadeIn 0.5s ease-in; /* Yumuşak yüklenme efekti */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fallback-cover {
+    height: 240px !important;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
+
+.spine-view .cover-wrapper, .spine-view .fallback-cover {
+    display: none !important;
+}
+
+.list-view .cover-wrapper {
+    width: 50px;
+    height: 75px;
+    margin-right: 15px;
+}
+.list-view .fallback-cover {
+    height: 75px !important;
+    font-size: 10px !important;
+}
