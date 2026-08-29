@@ -93,22 +93,33 @@ main { padding: 0 20px 40px 20px; max-width: 1200px; margin: 0 auto; }
 }
 
 /* 2. SPINE VIEW */
+/* 2. SPINE VIEW */
 .spine-view {
-    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px; padding: 20px;
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px; padding: 20px;
     background-color: rgba(0, 0, 0, 0.05); border-bottom: 15px solid #5c4033;
 }
 [data-theme="dark"] .spine-view {
     background-color: rgba(255, 255, 255, 0.02); border-bottom: 15px solid #2a1b12;
 }
 .spine-view .book-card {
-    width: 40px; height: 220px; display: flex; flex-direction: column; justify-content: space-between;
-    padding: 10px 5px; border-radius: 3px; cursor: pointer; transition: transform 0.2s;
-    box-shadow: inset 2px 0 5px rgba(255,255,255,0.2), inset -2px 0 5px rgba(0,0,0,0.3);
+    height: 290px; /* Kitap boyu 220px'den 290px'e çıkarıldı */
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 15px 5px; border-radius: 4px; cursor: pointer; transition: transform 0.2s;
+    box-shadow: inset 3px 0 6px rgba(255,255,255,0.2), inset -3px 0 6px rgba(0,0,0,0.3); /* 3D raf ışık efekti biraz artırıldı */
 }
-.spine-view .book-card:hover { transform: translateY(-10px); }
+.spine-view .book-card:hover { transform: translateY(-12px); }
 .spine-view .cover-wrapper, .spine-view .fallback-cover, .spine-view .book-author { display: none !important; }
 .spine-view .book-info { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; height: 100%; display: flex; align-items: center; }
-.spine-view .book-title { font-size: 12px; color: #fff; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 190px; }
+.spine-view .book-title { 
+    font-size: 14.5px; /* Okunabilirlik için font büyütüldü */
+    color: #fff; 
+    font-weight: bold; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    max-height: 250px; /* Uzun kitap isimlerinin sığması için alan artırıldı */
+    letter-spacing: 0.5px; 
+}
 
 /* 3. LIST VIEW */
 .list-view { display: flex; flex-direction: column; gap: 10px; }
