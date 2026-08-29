@@ -180,8 +180,10 @@ function updateLibrary() {
 
 // --- GITHUB API İLE YENİ KİTAP EKLEME SİSTEMİ ---
 
-const GITHUB_USER = "efeyurteri"; // Örnek: efeyurteri
-const GITHUB_REPO = "kutuphane"; // Örnek: kutuphane
+// --- GITHUB API İLE YENİ KİTAP EKLEME SİSTEMİ ---
+
+const GITHUB_USER = "efeyurteri"; // Burayı kendi kullanıcı adınla değiştir
+const GITHUB_REPO = "kutuphane"; // Burayı repo adınla değiştir
 const JSON_PATH = "books.json";
 
 const tokenInput = document.getElementById('github-token');
@@ -195,46 +197,112 @@ if(localStorage.getItem('gh_token')) {
 
 addBtn.addEventListener('click', async () => {
     const token = tokenInput.value.trim();
-    const isbn = isbnInput.value.trim();
+    const searchInput = isbnInput.value.trim();
     
-    if(!token || !isbn) {
-        statusText.textContent = "Token ve ISBN gerekli!";
+    if(!token || !searchInput) {
+        statusText.textContent = "Token ve Kitap Bilgisi (ISBN veya İsim) gerekli!";
         statusText.style.color = "red";
         return;
     }
 
     localStorage.setItem('gh_token', token);
-    statusText.textContent = "Google'da aranıyor...";
+    statusText.textContent = "Open Library'de aranıyor...";
     statusText.style.color = "orange";
 
-    try {
-        const googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
-        const googleData = await googleRes.json();
+    let bookInfo = null;
+    let isIsbn = /^\d{10,13}$/.test(searchInput);
 
-        if(!googleData.items || googleData.items.length === 0) {
-            statusText.textContent = "Kitap bulunamadı!";
+    try {
+        // 1. ADIM: OPEN LIBRARY (Öncelikli)
+        if (isIsbn) {
+            const olRes = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${searchInput}&format=json&jscmd=data`);
+            const olData = await olRes.json();
+            const key = `ISBN:${searchInput}`;
+            
+            if (olData[key]) {
+                const data = olData[key];
+                bookInfo = {
+                    title: data.title,
+                    author: data.authors ? data.authors.map(a => a.name).join(", ") : "Bilinmeyen Yazar",
+                    isbn: searchInput,
+                    isbn13: searchInput.length === 13 ? searchInput : "",
+                    publisher: data.publishers ? data.publishers.map(p => p.name).join(", ") : "",
+                    number_of_pages: data.number_of_pages || 0,
+                    year_published: data.publish_date ? parseInt(data.publish_date.match(/\d{4}/)?.[0] || 0) : 0,
+                    genre: data.subjects ? data.subjects.map(s => s.name)[0] : "Kurgu / Diğer",
+                    google_cover_url: "" 
+                };
+            }
+        } 
+        
+        // Open Library İsimden Arama
+        if (!bookInfo && !isIsbn) {
+            const olRes = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(searchInput)}`);
+            const olData = await olRes.json();
+            
+            if (olData.docs && olData.docs.length > 0) {
+                const doc = olData.docs[0];
+                const foundIsbn = doc.isbn ? doc.isbn[0] : "";
+                bookInfo = {
+                    title: doc.title,
+                    author: doc.author_name ? doc.author_name.join(", ") : "Bilinmeyen Yazar",
+                    isbn: foundIsbn,
+                    isbn13: foundIsbn && foundIsbn.length === 13 ? foundIsbn : "",
+                    publisher: doc.publisher ? doc.publisher[0] : "",
+                    number_of_pages: doc.number_of_pages_median || 0,
+                    year_published: doc.first_publish_year || 0,
+                    genre: doc.subject ? doc.subject[0] : "Kurgu / Diğer",
+                    google_cover_url: ""
+                };
+            }
+        }
+
+        // 2. ADIM: GOOGLE BOOKS (Yedek - Open Library'de bulunamazsa çalışır)
+        if (!bookInfo) {
+            statusText.textContent = "Open Library'de yok. Google'da aranıyor...";
+            let gQuery = isIsbn ? `q=isbn:${searchInput}` : `q=${encodeURIComponent(searchInput)}`;
+            let gRes = await fetch(`https://www.googleapis.com/books/v1/volumes?${gQuery}`);
+            let gData = await gRes.json();
+
+            // ISBN barkodu Google'da yoksa zorla kelime kelime arat
+            if ((!gData.items || gData.items.length === 0) && isIsbn) {
+                gRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${searchInput}`);
+                gData = await gRes.json();
+            }
+
+            if (gData.items && gData.items.length > 0) {
+                const info = gData.items[0].volumeInfo;
+                let extractedIsbn13 = "";
+                if (info.industryIdentifiers) {
+                    const i13 = info.industryIdentifiers.find(i => i.type === "ISBN_13");
+                    if (i13) extractedIsbn13 = i13.identifier;
+                }
+                const finalIsbn = isIsbn ? searchInput : (extractedIsbn13 || "Bilinmiyor");
+
+                bookInfo = {
+                    title: info.title || "İsimsiz Kitap",
+                    author: info.authors ? info.authors.join(", ") : "Bilinmeyen Yazar",
+                    isbn: finalIsbn,
+                    isbn13: finalIsbn.length === 13 ? finalIsbn : "",
+                    publisher: info.publisher || "",
+                    number_of_pages: info.pageCount || 0,
+                    year_published: info.publishedDate ? parseInt(info.publishedDate.substring(0,4)) : 0,
+                    genre: info.categories ? info.categories[0] : "Kurgu / Diğer",
+                    google_cover_url: info.imageLinks && info.imageLinks.thumbnail ? info.imageLinks.thumbnail.replace('http:', 'https:') : ""
+                };
+            }
+        }
+
+        // İki veritabanında da yoksa işlemi durdur
+        if (!bookInfo) {
+            statusText.textContent = "Kitap hiçbir veritabanında bulunamadı!";
             statusText.style.color = "red";
             return;
         }
 
-        const info = googleData.items[0].volumeInfo;
-        
-        const newBook = {
-            title: info.title || "İsimsiz Kitap",
-            author: info.authors ? info.authors.join(", ") : "Bilinmeyen Yazar",
-            additional_authors: "",
-            isbn: isbn,
-            isbn13: isbn.length === 13 ? isbn : "",
-            publisher: info.publisher || "",
-            binding: "Bilinmiyor",
-            number_of_pages: info.pageCount || 0,
-            year_published: info.publishedDate ? parseInt(info.publishedDate.substring(0,4)) : 0,
-            original_publication_year: 0,
-            genre: info.categories ? info.categories[0] : "Kurgu / Diğer"
-        };
+        statusText.textContent = "Kitap bulundu! GitHub'a kaydediliyor...";
 
-        statusText.textContent = "GitHub'a kaydediliyor...";
-
+        // 3. ADIM: GITHUB'A KAYDETME
         const fileRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${JSON_PATH}`, {
             headers: { 'Authorization': `token ${token}` }
         });
@@ -243,7 +311,7 @@ addBtn.addEventListener('click', async () => {
         const currentContent = decodeURIComponent(escape(atob(fileData.content)));
         let currentBooks = JSON.parse(currentContent);
 
-        currentBooks.unshift(newBook);
+        currentBooks.unshift(bookInfo);
 
         const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentBooks, null, 2))));
         
@@ -254,7 +322,7 @@ addBtn.addEventListener('click', async () => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                message: `Yeni kitap eklendi: ${newBook.title}`,
+                message: `Yeni kitap eklendi: ${bookInfo.title}`,
                 content: updatedContent,
                 sha: fileData.sha 
             })
