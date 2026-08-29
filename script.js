@@ -1,7 +1,7 @@
 let allBooks = [];
 let libraryContainer = document.getElementById('library-container');
 
-// Temalar
+// Tema Kontrolü
 const themeToggleBtn = document.getElementById('theme-toggle');
 const currentTheme = localStorage.getItem('theme') || 'light';
 document.documentElement.setAttribute('data-theme', currentTheme);
@@ -13,17 +13,16 @@ themeToggleBtn.addEventListener('click', () => {
     localStorage.setItem('theme', newTheme);
 });
 
-// Veriyi çek
+// JSON Verisini Çekme
 fetch('books.json')
     .then(response => response.json())
     .then(data => {
         allBooks = data;
         populateGenres();
-        renderBooks(allBooks); // Sadece bir kere render edilecek
+        renderBooks(allBooks);
     })
     .catch(error => console.error('Kitaplar yüklenirken hata oluştu:', error));
 
-// Türleri Doldur
 function populateGenres() {
     const genreSelect = document.getElementById('genre-filter');
     const genres = [...new Set(allBooks.map(b => b.genre))].sort();
@@ -38,7 +37,6 @@ function populateGenres() {
     });
 }
 
-// Renk Üretici
 function stringToColor(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -47,7 +45,7 @@ function stringToColor(str) {
     return `hsl(${Math.abs(hash) % 360}, 50%, 35%)`; 
 }
 
-// 1 Kereye Mahsus Kitapları Çizme
+// Tüm Kitapları Bir Kere DOM'a Çizme
 function renderBooks(books) {
     libraryContainer.innerHTML = '';
 
@@ -55,33 +53,34 @@ function renderBooks(books) {
         const bookCard = document.createElement('div');
         bookCard.className = 'book-card';
         
-        // Arama ve filtreleme için verileri HTML elementine gömüyoruz
         bookCard.setAttribute('data-title', book.title || '');
         bookCard.setAttribute('data-author', book.author || '');
         bookCard.setAttribute('data-genre', book.genre || '');
         bookCard.setAttribute('data-year', book.year_published || 0);
         bookCard.setAttribute('data-pages', book.number_of_pages || 0);
         
-        const bgColor = stringToColor(book.isbn13 || book.title);
+        const isbnToUse = book.isbn13 || book.isbn || '';
+        const bgColor = stringToColor(isbnToUse || book.title);
 
         let width = 30; 
         if(book.number_of_pages) {
             width = Math.max(25, Math.min(60, book.number_of_pages / 10));
         }
-        // Raf görünümü için inline değişken atıyoruz
+        
         bookCard.style.setProperty('--spine-color', bgColor);
         bookCard.style.setProperty('--spine-width', `${width}px`);
 
-        const coverUrl = book.cover_url || '';
+        const primaryCover = isbnToUse ? `https://covers.openlibrary.org/b/isbn/${isbnToUse}-M.jpg` : '';
+        const fallbackCover = book.google_cover_url || '';
 
         bookCard.innerHTML = `
             <div class="cover-wrapper" style="background-color: ${bgColor};">
-                <img src="${coverUrl}" 
+                <img src="${primaryCover}" 
                      alt="${book.title}" 
                      class="book-cover" 
                      loading="lazy"
                      onload="checkImage(this)"
-                     onerror="showFallback(this)">
+                     onerror="showFallback(this, '${fallbackCover}')">
                 
                 <div class="fallback-cover" style="display: none; align-items: center; justify-content: center; height: 100%; text-align: center; color: white; padding: 10px; font-weight: bold; font-size: 14px;">
                     ${book.title}
@@ -95,23 +94,25 @@ function renderBooks(books) {
         libraryContainer.appendChild(bookCard);
     });
 
-    // İlk dizilim için sıralamayı tetikle
     updateLibrary();
 }
 
-// OpenLibrary'nin 1x1 şeffaf piksellerini yakalama
 function checkImage(img) {
     if(img.naturalWidth <= 1 || img.naturalHeight <= 1) {
-        showFallback(img);
+        img.onerror();
     }
 }
 
-function showFallback(img) {
-    img.style.display = 'none';
-    img.nextElementSibling.style.display = 'flex';
+function showFallback(img, fallbackUrl) {
+    if (fallbackUrl && img.src !== fallbackUrl) {
+        img.src = fallbackUrl;
+    } else {
+        img.style.display = 'none';
+        img.nextElementSibling.style.display = 'flex';
+    }
 }
 
-// Görünüm Değiştiriciler
+// Görünüm Değiştirme
 const viewBtns = document.querySelectorAll('.view-btn');
 viewBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -120,7 +121,6 @@ viewBtns.forEach(btn => {
         const newView = e.target.getAttribute('data-view');
         libraryContainer.className = newView;
         
-        // Spine View'da renklendirmeyi CSS variables üzerinden aktif et
         const cards = document.querySelectorAll('.book-card');
         cards.forEach(card => {
             if(newView === 'spine-view') {
@@ -134,7 +134,7 @@ viewBtns.forEach(btn => {
     });
 });
 
-// Arama, Filtreleme ve Sıralama (Yeniden Çizmeden)
+// Arama, Filtreleme ve Sıralama
 document.getElementById('search-bar').addEventListener('input', updateLibrary);
 document.getElementById('sort-select').addEventListener('change', updateLibrary);
 document.getElementById('genre-filter').addEventListener('change', updateLibrary);
@@ -144,7 +144,6 @@ function updateLibrary() {
     const sortBy = document.getElementById('sort-select').value;
     const genreFilter = document.getElementById('genre-filter').value;
     
-    // NodeList'i Array'e çevirip sıralama yapacağız
     let cards = Array.from(document.querySelectorAll('.book-card'));
 
     cards.forEach(card => {
@@ -155,7 +154,6 @@ function updateLibrary() {
         const matchesSearch = title.includes(searchTerm) || author.includes(searchTerm);
         const matchesGenre = genreFilter === 'all' || genre === genreFilter;
 
-        // Silmek yerine gizliyoruz (Titremeyi %100 çözer)
         if (matchesSearch && matchesGenre) {
             card.style.display = ''; 
         } else {
@@ -163,7 +161,6 @@ function updateLibrary() {
         }
     });
 
-    // Sıralama (Mevcut elementlerin sırasını değiştiriyoruz, resimleri baştan indirtmiyor)
     cards.sort((a, b) => {
         const titleA = a.getAttribute('data-title');
         const titleB = b.getAttribute('data-title');
@@ -179,6 +176,103 @@ function updateLibrary() {
         if (sortBy === 'pages-desc') return pagesB - pagesA;
     });
 
-    // Sıralanmış elementleri tekrar container'a ekle (DOM taşıması yapar, flash atmaz)
     cards.forEach(card => libraryContainer.appendChild(card));
 }
+
+// --- GITHUB API İLE YENİ KİTAP EKLEME SİSTEMİ ---
+
+const GITHUB_USER = "SENIN_KULLANICI_ADIN"; // Örnek: efeyurteri
+const GITHUB_REPO = "REPO_ADIN"; // Örnek: kutuphane
+const JSON_PATH = "books.json";
+
+const tokenInput = document.getElementById('github-token');
+const isbnInput = document.getElementById('new-isbn');
+const addBtn = document.getElementById('add-book-btn');
+const statusText = document.getElementById('add-status');
+
+if(localStorage.getItem('gh_token')) {
+    tokenInput.value = localStorage.getItem('gh_token');
+}
+
+addBtn.addEventListener('click', async () => {
+    const token = tokenInput.value.trim();
+    const isbn = isbnInput.value.trim();
+    
+    if(!token || !isbn) {
+        statusText.textContent = "Token ve ISBN gerekli!";
+        statusText.style.color = "red";
+        return;
+    }
+
+    localStorage.setItem('gh_token', token);
+    statusText.textContent = "Google'da aranıyor...";
+    statusText.style.color = "orange";
+
+    try {
+        const googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+        const googleData = await googleRes.json();
+
+        if(!googleData.items || googleData.items.length === 0) {
+            statusText.textContent = "Kitap bulunamadı!";
+            statusText.style.color = "red";
+            return;
+        }
+
+        const info = googleData.items[0].volumeInfo;
+        
+        const newBook = {
+            title: info.title || "İsimsiz Kitap",
+            author: info.authors ? info.authors.join(", ") : "Bilinmeyen Yazar",
+            additional_authors: "",
+            isbn: isbn,
+            isbn13: isbn.length === 13 ? isbn : "",
+            publisher: info.publisher || "",
+            binding: "Bilinmiyor",
+            number_of_pages: info.pageCount || 0,
+            year_published: info.publishedDate ? parseInt(info.publishedDate.substring(0,4)) : 0,
+            original_publication_year: 0,
+            genre: info.categories ? info.categories[0] : "Kurgu / Diğer",
+            google_cover_url: info.imageLinks && info.imageLinks.thumbnail ? info.imageLinks.thumbnail.replace('http:', 'https:') : ""
+        };
+
+        statusText.textContent = "GitHub'a kaydediliyor...";
+
+        const fileRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${JSON_PATH}`, {
+            headers: { 'Authorization': `token ${token}` }
+        });
+        const fileData = await fileRes.json();
+        
+        const currentContent = decodeURIComponent(escape(atob(fileData.content)));
+        let currentBooks = JSON.parse(currentContent);
+
+        currentBooks.unshift(newBook);
+
+        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentBooks, null, 2))));
+        
+        const updateRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${JSON_PATH}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Yeni kitap eklendi: ${newBook.title}`,
+                content: updatedContent,
+                sha: fileData.sha 
+            })
+        });
+
+        if(updateRes.ok) {
+            statusText.textContent = "Başarıyla Eklendi! (Sayfa 1-2 dk içinde güncellenir)";
+            statusText.style.color = "green";
+            isbnInput.value = ""; 
+        } else {
+            throw new Error("GitHub güncellenemedi.");
+        }
+
+    } catch (error) {
+        statusText.textContent = "Hata oluştu!";
+        statusText.style.color = "red";
+        console.error(error);
+    }
+});
