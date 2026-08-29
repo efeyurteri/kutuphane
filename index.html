@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kişisel Kütüphanem</title>
@@ -22,7 +22,7 @@
 
             <select id="genre-filter">
                 <option value="all">Tüm Türler</option>
-                </select>
+            </select>
 
             <div class="view-toggles">
                 <button class="view-btn active" data-view="grid-view">Kapaklar</button>
@@ -32,11 +32,21 @@
 
             <button id="theme-toggle">Karanlık Mod</button>
         </div>
+
+        <!-- Yönetici Paneli -->
+        <div class="admin-panel" style="margin-top: 15px; padding: 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;">
+            <h3 style="margin-top:0;">Kitap Ekle</h3>
+            <input type="password" id="github-token" placeholder="GitHub Token (Sadece ilk girişte)" style="width: 250px;">
+            <input type="text" id="new-isbn" placeholder="ISBN Numarası" style="width: 150px;">
+            <button id="add-book-btn">Bul ve Ekle</button>
+            <span id="add-status" style="margin-left: 10px; font-size: 14px; font-weight: bold;"></span>
+        </div>
     </header>
 
     <main>
         <div id="library-container" class="grid-view">
-            </div>
+            <!-- Kitaplar buraya yüklenecek -->
+        </div>
     </main>
 
     <script src="script.js"></script>
