@@ -62,9 +62,10 @@ function renderBooks(books) {
         const isbnToUse = book.isbn13 || book.isbn || '';
         const bgColor = stringToColor(isbnToUse || book.title);
 
-        let width = 30; 
+        let width = 40; // Sayfa sayısı bilinmeyenler için standart kalınlık
         if(book.number_of_pages) {
-            width = Math.max(25, Math.min(60, book.number_of_pages / 10));
+            // Sayfa sayısını 5.5'e bölüp, kalınlığı 35px ile 100px arasında dinamik olarak dağıtıyoruz.
+            width = Math.max(35, Math.min(100, book.number_of_pages / 5.5));
         }
         
         bookCard.style.setProperty('--spine-color', bgColor);
