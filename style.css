@@ -33,216 +33,65 @@ header {
     border-bottom: 1px solid var(--border-color);
 }
 
-h1 {
-    margin: 0 0 15px 0;
-    text-align: center;
-}
+h1 { margin: 0 0 15px 0; text-align: center; }
 
 .controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    align-items: center;
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
 }
 
 input, select, button {
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    border-radius: 4px;
-    font-size: 14px;
+    padding: 8px 12px; border: 1px solid var(--border-color);
+    background-color: var(--bg-color); color: var(--text-color);
+    border-radius: 4px; font-size: 14px;
 }
 
-button {
-    cursor: pointer;
-    background-color: var(--primary-color);
-    color: #fff;
-    border: none;
-}
+button { cursor: pointer; background-color: var(--primary-color); color: #fff; border: none; }
+button:hover { background-color: var(--btn-hover); }
+.view-btn.active { outline: 2px solid #fff; outline-offset: -4px; }
 
-button:hover {
-    background-color: var(--btn-hover);
-}
+main { padding: 0 20px 40px 20px; max-width: 1200px; margin: 0 auto; }
 
-.view-btn.active {
-    outline: 2px solid #fff;
-    outline-offset: -4px;
-}
-
-main {
-    padding: 0 20px 40px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* 1. GRID VIEW (KAPAKLAR) */
+/* 1. GRID VIEW */
 .grid-view {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 20px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px;
 }
-
 .grid-view .book-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    background-color: var(--card-bg); border: 1px solid var(--border-color);
+    border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
+.grid-view .book-info { padding: 10px; text-align: center; }
+.grid-view .book-title { font-size: 14px; font-weight: bold; margin: 0 0 5px 0; }
+.grid-view .book-author { font-size: 12px; opacity: 0.8; }
 
-.grid-view .book-cover {
-    width: 100%;
-    height: 240px;
-    object-fit: cover;
-    background-color: #ddd;
-}
+/* Kapak Yükleme ve Fallback (Yedek Kapak) Sistemi */
+.cover-wrapper { width: 100%; height: 240px; position: relative; overflow: hidden; }
+.book-cover { width: 100%; height: 100%; object-fit: cover; animation: fadeIn 0.5s ease-in; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.fallback-cover { height: 240px !important; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
 
-.grid-view .book-info {
-    padding: 10px;
-    text-align: center;
-}
-
-.grid-view .book-title {
-    font-size: 14px;
-    font-weight: bold;
-    margin: 0 0 5px 0;
-}
-
-.grid-view .book-author {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
-/* 2. SPINE VIEW (RAFLAR) */
+/* 2. SPINE VIEW */
 .spine-view {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 4px;
-    padding: 20px;
-    background-color: rgba(0, 0, 0, 0.05);
-    border-bottom: 15px solid #5c4033; /* Ahşap raf efekti */
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px; padding: 20px;
+    background-color: rgba(0, 0, 0, 0.05); border-bottom: 15px solid #5c4033;
 }
-
 [data-theme="dark"] .spine-view {
-    background-color: rgba(255, 255, 255, 0.02);
-    border-bottom: 15px solid #2a1b12;
+    background-color: rgba(255, 255, 255, 0.02); border-bottom: 15px solid #2a1b12;
 }
-
 .spine-view .book-card {
-    width: 40px;
-    height: 220px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 10px 5px;
-    border-radius: 3px;
+    width: 40px; height: 220px; display: flex; flex-direction: column; justify-content: space-between;
+    padding: 10px 5px; border-radius: 3px; cursor: pointer; transition: transform 0.2s;
     box-shadow: inset 2px 0 5px rgba(255,255,255,0.2), inset -2px 0 5px rgba(0,0,0,0.3);
-    cursor: pointer;
-    transition: transform 0.2s;
 }
+.spine-view .book-card:hover { transform: translateY(-10px); }
+.spine-view .cover-wrapper, .spine-view .fallback-cover, .spine-view .book-author { display: none !important; }
+.spine-view .book-info { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; height: 100%; display: flex; align-items: center; }
+.spine-view .book-title { font-size: 12px; color: #fff; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 190px; }
 
-.spine-view .book-card:hover {
-    transform: translateY(-10px);
-}
-
-.spine-view .book-cover, .spine-view .book-author {
-    display: none;
-}
-
-.spine-view .book-info {
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    text-align: left;
-    height: 100%;
-    display: flex;
-    align-items: center;
-}
-
-.spine-view .book-title {
-    font-size: 12px;
-    color: #fff;
-    font-weight: bold;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-height: 190px;
-}
-
-/* 3. LIST VIEW (LİSTE) */
-.list-view {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.list-view .book-card {
-    display: flex;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 10px;
-    align-items: center;
-}
-
-.list-view .book-cover {
-    width: 50px;
-    height: 75px;
-    object-fit: cover;
-    margin-right: 15px;
-    border-radius: 4px;
-}
-
-.list-view .book-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.list-view .book-title {
-    font-size: 16px;
-    font-weight: bold;
-    margin: 0 0 5px 0;
-}
-
-/* Kapak yüklenme ve hata yedekleri için eklentiler */
-.cover-wrapper {
-    width: 100%;
-    height: 240px;
-    position: relative;
-    overflow: hidden;
-}
-
-.book-cover {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    animation: fadeIn 0.5s ease-in; /* Yumuşak yüklenme efekti */
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.fallback-cover {
-    height: 240px !important;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-}
-
-.spine-view .cover-wrapper, .spine-view .fallback-cover {
-    display: none !important;
-}
-
-.list-view .cover-wrapper {
-    width: 50px;
-    height: 75px;
-    margin-right: 15px;
-}
-.list-view .fallback-cover {
-    height: 75px !important;
-    font-size: 10px !important;
-}
+/* 3. LIST VIEW */
+.list-view { display: flex; flex-direction: column; gap: 10px; }
+.list-view .book-card { display: flex; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; align-items: center; }
+.list-view .cover-wrapper { width: 50px; height: 75px; margin-right: 15px; }
+.list-view .fallback-cover { height: 75px !important; font-size: 10px !important; }
+.list-view .book-info { display: flex; flex-direction: column; text-align: left;}
+.list-view .book-title { font-size: 16px; font-weight: bold; margin: 0 0 5px 0; }
