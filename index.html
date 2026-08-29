@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kişisel Kütüphanem</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Kütüphanem</h1>
+        <div class="controls">
+            <input type="text" id="search-bar" placeholder="Kitap, yazar veya yayınevi ara...">
+            
+            <select id="sort-select">
+                <option value="title-asc">İsim (A-Z)</option>
+                <option value="title-desc">İsim (Z-A)</option>
+                <option value="year-desc">Yıl (Yeni-Eski)</option>
+                <option value="year-asc">Yıl (Eski-Yeni)</option>
+                <option value="pages-desc">Sayfa (Çok-Az)</option>
+            </select>
+
+            <select id="genre-filter">
+                <option value="all">Tüm Türler</option>
+                </select>
+
+            <div class="view-toggles">
+                <button class="view-btn active" data-view="grid-view">Kapaklar</button>
+                <button class="view-btn" data-view="spine-view">Raflar</button>
+                <button class="view-btn" data-view="list-view">Liste</button>
+            </div>
+
+            <button id="theme-toggle">Karanlık Mod</button>
+        </div>
+    </header>
+
+    <main>
+        <div id="library-container" class="grid-view">
+            </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

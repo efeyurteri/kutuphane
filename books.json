@@ -1,0 +1,44 @@
+[
+  {
+    "title": "Monte Kristo Kontu",
+    "author": "Alexandre Dumas",
+    "additional_authors": "",
+    "isbn": "6054395270",
+    "isbn13": "9786054395279",
+    "publisher": "Okuryazar Yayınevi",
+    "binding": "Paperback",
+    "number_of_pages": 144,
+    "year_published": 2017,
+    "original_publication_year": 1846,
+    "genre": "Klasik",
+    "cover_url": "https://covers.openlibrary.org/b/isbn/9786054395279-L.jpg"
+  },
+  {
+    "title": "Dürtme",
+    "author": "Richard H. Thaler",
+    "additional_authors": "Cass R. Sunstein, Enver Günsel",
+    "isbn": "6053430420",
+    "isbn13": "9786053430421",
+    "publisher": "Pegasus",
+    "binding": "Paperback",
+    "number_of_pages": 336,
+    "year_published": 2013,
+    "original_publication_year": 2008,
+    "genre": "Psikoloji",
+    "cover_url": "https://covers.openlibrary.org/b/isbn/9786053430421-L.jpg"
+  },
+  {
+    "title": "Sapiens: Hayvanlardan Tanrılara",
+    "author": "Yuval Noah Harari",
+    "additional_authors": "Ertuğrul Genç",
+    "isbn": "6055029359",
+    "isbn13": "9786055029357",
+    "publisher": "Kolektif Kitap",
+    "binding": "Paperback",
+    "number_of_pages": 411,
+    "year_published": 2015,
+    "original_publication_year": 2011,
+    "genre": "Tarih",
+    "cover_url": "https://covers.openlibrary.org/b/isbn/9786055029357-L.jpg"
+  }
+]
